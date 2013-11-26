@@ -17,14 +17,18 @@ class RecurringItemForm(forms.Form):
                                       coerce=int, empty_value=1, initial=1)
     freq_interval = forms.ChoiceField(choices=FREQ_INTERVAL_CHOICES,
                                       initial='M')
-    base_date = forms.DateField(widget=widgets.SelectDateWidget)
+    begin_date = forms.DateField(widget=widgets.SelectDateWidget)
+    end_date = forms.DateField(widget=widgets.SelectDateWidget)
     value = forms.FloatField(min_value=0, max_value=100000)
 
 class OverrideItemForm(forms.Form):
     """override value of recurring item on specific date"""
-    name = forms.ChoiceField(choices=[item.name for item in models.RecurItemRaw.objects.all()])
+    name = forms.ChoiceField(choices=[(item.name, item.name) for item
+                                      in models.RecurItemRaw.objects.all()])
     date = forms.DateField(widget=widgets.SelectDateWidget)
     value = forms.FloatField(min_value=0, max_value=100000)
 
-f = OverrideItemForm()
-print(f)
+class CashLevelForm(forms.Form):
+    """input actual cash level on given date"""
+    cash_level = forms.FloatField(min_value=-500, max_value=100000)
+    date = forms.DateField(widget=widgets.SelectDateWidget)

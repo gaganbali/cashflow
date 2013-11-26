@@ -6,7 +6,8 @@ import main.views as views
 # admin.autodiscover()
 
 urlpatterns = patterns('',
-                       url(r'^recur/$', views.add_recurring)
+                       url(r'^recur/$', views.add_recurring),
+                       url(r'^cash/$', views.view_cash)
     # Examples:
     # url(r'^$', 'cashflow.views.home', name='home'),
     # url(r'^cashflow/', include('cashflow.foo.urls')),

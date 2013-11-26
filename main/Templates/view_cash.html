@@ -1,0 +1,26 @@
+<html>
+	<head>
+		<title>View Cash</title>
+	</head>
+	<body>
+		<h1>Update base cash level</h1>
+		
+		{% if messages %}
+			{% for message in messages %}
+				<p style="color:red">{{ message }}</p>
+			{% endfor %}
+		{% endif %}
+
+		<form action="" method="post">
+			{{ cash_form.as_p }}
+			{% csrf_token %}
+			<input type="submit" name="cash" value="Submit">
+		</form>
+		
+		<h1>View Predicted Cash levels</h1>
+		
+		{{ cash_table }}
+		
+		
+	</body>
+</html>
