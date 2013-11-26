@@ -1,10 +1,12 @@
 from django.conf.urls import patterns, include, url
+import main.views as views
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
 # admin.autodiscover()
 
 urlpatterns = patterns('',
+                       url(r'^recur/$', views.add_recurring)
     # Examples:
     # url(r'^$', 'cashflow.views.home', name='home'),
     # url(r'^cashflow/', include('cashflow.foo.urls')),
