@@ -2,41 +2,27 @@
 import pandas as pd
 from django.shortcuts import render
 from django.contrib import messages
+from django.views.generic.base import View
 import main.forms as forms
-from main.models import RecurItemRaw, OverrideItem
+from main.models import RecurItemRaw
 
-def add_recurring(request):
-    """adds recurring items and override to appropriate models"""
-    if request.POST:
-        if "recur" in request.POST:
-            recur_form = forms.RecurringItemForm(request.POST)
-            if recur_form.is_valid():
-                messages.success(request, 'Your recurring item was successfully saved.')
-                cleaned = recur_form.cleaned_data
-                row = RecurItemRaw(name=cleaned['name'],
-                        exp_inc=cleaned['exp_inc'],
-                        freq_num=cleaned['freq_num'],
-                        freq_interval=cleaned['freq_interval'],
-                        begin_date=cleaned['begin_date'],
-                        end_date=cleaned['end_date'],
-                        value=cleaned['value'])
-                row.save()
-        elif "override" in request.POST:
-            override_form = forms.OverrideItemForm(request.POST)
-            if override_form.is_valud():
-                messages.success(request, 'Your override item was successfully saved.')
-                cleaned = override_form.cleaned_data
-                recur_item = RecurItemRaw.objects.filter(name=cleaned['name'])[0]
-                row = OverrideItem(recur_item=recur_item,
-                                   date=cleaned['date'],
-                                   value=cleaned['value'])
-                row.save()
-    recur_form = forms.RecurringItemForm()
-    override_form = forms.OverrideItemForm()
-    return render(request, 'recurring_adj_form.html',
-                  {'recur_form': recur_form, 
-                   'override_form': override_form, 
-                   'items': RecurItemRaw.objects.all()})
+class AddItemView(View):
+    form_class = forms.RecurringItemForm
+    items_model = RecurItemRaw
+    template_name = 'recurring_adj_form.html'
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name,
+                      {'recur_form': self.form_class(),
+                       'items': self.items_model.objects.all()})
+    
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)
+        form.save()
+        return render(request, self.template_name,
+                      {'recur_form': self.form_class(),
+                       'items': self.items_model.objects.all()})
+        
 
 def view_cash(request):
     """lists predicted cash each day based on current cash input

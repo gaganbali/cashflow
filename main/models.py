@@ -1,30 +1,19 @@
 from django.db import models
 
-
-class RecurringAdjustments(models.Model):
-    """db that tracks expected adjustments to cashflow"""
-    name = models.CharField(max_length=30)
-    begin_date = models.DateField()
-    end_date = models.DateField()
-    date_offset = models.CharField(max_length=20)
-    value = models.FloatField()
-    exact = models.BooleanField()
+FREQ_INTERVAL_CHOICES = [('M', 'Month(s)'), ('W', 'Week(s)'),
+                         ('D', 'Day(s)')]
 
 class RecurItemRaw(models.Model):
     """db that collects user entered info on recurring items"""
-    name = models.CharField(max_length=30)
-    exp_inc = models.CharField(max_length=10)
+    name = models.CharField(max_length=30, unique=True)
+    exp_inc = models.CharField(max_length=10, choices=(('exp', 'Expense'), ('inc', 'Income')))
     freq_num = models.IntegerField()
-    freq_interval = models.CharField(max_length=10)
+    freq_interval = models.CharField(max_length=10, choices=FREQ_INTERVAL_CHOICES)
     begin_date = models.DateField()
     end_date = models.DateField()
     value = models.FloatField()
 
-class OverrideItem(models.Model):
-    """db that collects user entered info on recurring item values
-    to override
-    
-    """
-    recur_item = models.ForeignKey(RecurItemRaw)
+class CashLevel(models.Model):
+    """db that collects actual cash level on given date"""
+    cash_level = models.FloatField()
     date = models.DateField()
-    value = models.FloatField()

@@ -2,24 +2,14 @@ from django import forms
 from django.forms.extras import widgets
 import main.models as models
 
-FREQ_INTERVAL_CHOICES = [('M', 'Month(s)'), ('W', 'Week(s)'),
-                         ('D', 'Day(s)')]
-
-class RecurringItemForm(forms.Form):
-    """for users to enter recurring items
-    data get loaded into RecurItemRaw
+class RecurringItemForm(forms.ModelForm):
     
-    """
-    name = forms.CharField()
-    exp_inc = forms.ChoiceField(choices=[('exp', 'Expense'), ('inc', 'Income')],
-                                initial='exp')
-    freq_num = forms.TypedChoiceField(choices=[(n, n) for n in range(91)],
-                                      coerce=int, empty_value=1, initial=1)
-    freq_interval = forms.ChoiceField(choices=FREQ_INTERVAL_CHOICES,
-                                      initial='M')
-    begin_date = forms.DateField(widget=widgets.SelectDateWidget)
-    end_date = forms.DateField(widget=widgets.SelectDateWidget)
-    value = forms.FloatField(min_value=0, max_value=100000)
+    class Meta:
+        model = models.RecurItemRaw
+        fields = ['name', 'exp_inc', 'freq_num', 'freq_interval', 'begin_date',
+                  'end_date', 'value']
+        widgets = {'begin_date': widgets.SelectDateWidget,
+                   'end_date': widgets.SelectDateWidget}
 
 class OverrideItemForm(forms.Form):
     """override value of recurring item on specific date"""
