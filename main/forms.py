@@ -3,7 +3,7 @@ from django.forms.extras import widgets
 import main.models as models
 
 class RecurringItemForm(forms.ModelForm):
-    
+    """add recurring item to database"""
     class Meta:
         model = models.RecurItemRaw
         fields = ['name', 'exp_inc', 'freq_num', 'freq_interval', 'begin_date',
@@ -18,7 +18,9 @@ class OverrideItemForm(forms.Form):
     date = forms.DateField(widget=widgets.SelectDateWidget)
     value = forms.FloatField(min_value=0, max_value=100000)
 
-class CashLevelForm(forms.Form):
+class CashLevelForm(forms.ModelForm):
     """input actual cash level on given date"""
-    cash_level = forms.FloatField(min_value=-500, max_value=100000)
-    date = forms.DateField(widget=widgets.SelectDateWidget)
+    class Meta:
+        model = models.CashLevel
+        fields = ['date', 'cash_level']
+        widgets = {'date': widgets.SelectDateWidget}

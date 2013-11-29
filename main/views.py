@@ -4,44 +4,35 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.views.generic.base import View
 import main.forms as forms
-from main.models import RecurItemRaw
+import main.models as models
 
-class AddItemView(View):
-    form_class = forms.RecurringItemForm
-    items_model = RecurItemRaw
-    template_name = 'recurring_adj_form.html'
+class AddDisplayItemView(View):
+    form_class = None
+    form_name = None
+    model = None
+    template_name = None
 
     def get(self, request, *args, **kwargs):
         return render(request, self.template_name,
-                      {'recur_form': self.form_class(),
-                       'items': self.items_model.objects.all()})
+                      {self.form_name: self.form_class(),
+                       'items': self.model.objects.all()})
     
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
         form.save()
         return render(request, self.template_name,
-                      {'recur_form': self.form_class(),
-                       'items': self.items_model.objects.all()})
+                      {self.form_name: self.form_class(),
+                       'items': self.model.objects.all()})
         
+class RecurItemView(AddDisplayItemView):
+    form_class = forms.RecurringItemForm
+    form_name = 'recur_form'
+    model = models.RecurItem
+    template_name = 'recurring_adj_form.html'
 
-def view_cash(request):
-    """lists predicted cash each day based on current cash input
-    and predicted inflows/outflows
+class CashView(AddDisplayItemView):
+    form_class = forms.CashLevelForm
+    form_name = 'cash_form'
+    model = models.CashLevel
+    template_name = 'view_cash.html'
     
-    """
-    cash_table = pd.DataFrame()
-    if request.POST:
-        if "recur" in request.POST:
-            cash_form = forms.CashLevelForm(request.POST)
-            if cash_form.is_valid():
-                messages.success(request, 'Cash level updated.')
-                cleaned = cash_form.cleaned_data
-                cash_table = calc_expected_cash(cleaned['date'], cleaned['cash_level'])
-    cash_form = forms.CashLevelForm()
-    return render(request, 'view_cash.html',
-                  {'cash_form': cash_form,
-                   'cash_table': cash_table})
-
-
-def calc_expected_cash(start_date, start_level):
-    return pd.DataFrame({'date': [start_date], 'cash_level': [start_level]})

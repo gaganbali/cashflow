@@ -19,7 +19,14 @@
 		
 		<h1>View Predicted Cash levels</h1>
 		
-		{{ cash_table }}
+		<table>
+			<th>Date</th><th>Cash level</th>
+			{% for item in items %}
+				<tr>
+					<td>{{ item.date }}</td><td>{{ item.cash_level }}</td>
+				</tr>
+			{% endfor %}
+		</table>
 		
 		
 	</body>
