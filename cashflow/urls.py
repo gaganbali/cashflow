@@ -6,8 +6,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-                       url(r'^recur/$', views.RecurItemView.as_view()),
-                       url(r'^cash/$', views.CashView.as_view()),
+                       url(r'^ledger/(?P<date_string>\d+)/(?P<offset>\d+)/$', views.LedgerList.as_view()),
     # Examples:
     # url(r'^$', 'cashflow.views.home', name='home'),
     # url(r'^cashflow/', include('cashflow.foo.urls')),

@@ -4,12 +4,17 @@ import pandas as pd
 FREQ_INTERVAL_CHOICES = [('M', 'Month(s)'), ('W', 'Week(s)'),
                          ('D', 'Day(s)')]
 
+WEEKDAYS = {0: 'MON', 1: 'TUE', 2: 'WED', 3: 'THU', 4: 'FRI',
+            5: 'SAT', 6: 'SUN'}
+
 def _date_range(begin_date, end_date, freq_num, freq_interval):
     """list of dates between begin date and end date at given interval"""
     if freq_interval == 'M':
         day_offset = begin_date.day - 1
         return (pd.date_range(begin_date, end_date, freq = 'MS')
                       .shift(day_offset, freq=pd.datetools.day))
+    if freq_interval == 'W':
+        freq_interval += '-{}'.format(WEEKDAYS[begin_date.weekday()])
     return pd.date_range(begin_date, end_date,
                                freq = '{}{}'.format(freq_num, freq_interval))
 
@@ -34,11 +39,16 @@ class RecurItem(models.Model):
         date_range = _date_range(self.begin_date, self.end_date,
                                  self.freq_num, self.freq_interval)
         for date in date_range:
-            ledger_item = Ledger(name=self.name, date=date,
-                                 exp_inc=self.exp_inc, recur_item=self)
-            if override or ledger_item.amount is None:
-                ledger_item.amount = self.amount
-            ledger_item.save()
+            try:
+                ledger_item = Ledger.objects.get(name=self.name, date=date)
+                if override:
+                    ledger_item.recur_item = self
+                    ledger_item.exp_inc = self.exp_inc
+                    ledger_item.amount = self.amount
+                ledger_item.save()
+            except Ledger.DoesNotExist:
+                Ledger.objects.create(name=self.name, date=date,
+                        exp_inc=self.exp_inc, amount=self.amount, recur_item=self)
 
 class CashLevel(models.Model):
     """db that collects actual cash level on given date"""
@@ -57,9 +67,29 @@ class Ledger(models.Model):
     date = models.DateField()
     amount = models.FloatField()
     exp_inc = models.CharField(max_length=10, choices=(('exp', 'Expense'), ('inc', 'Income')))
-    recur_item = models.ForeignKey(RecurItem, blank=True)
+    recur_item = models.ForeignKey(RecurItem, blank=True, null=True)
     
     class Meta:
-        ordering = ['-date', 'name']
+        ordering = ['date', 'name']
         unique_together = ('name', 'date')
+    
+    def __str__(self):
+        return '%s (%s)' % (self.name, self.date)
+    
+    @property
+    def recurring(self):
+        """True if ledger item has a recur item"""
+        return (self.recur_item is not None)
+    
+    @property
+    def expense(self):
+        """expense amount if type is expense"""
+        if self.exp_inc == 'exp':
+            return self.amount
+    
+    @property
+    def income(self):
+        """income amount if type is income"""
+        if self.exp_inc == 'inc':
+            return self.amount
     

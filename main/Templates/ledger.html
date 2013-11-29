@@ -1,0 +1,19 @@
+<html>
+	<head>
+		<title>Ledger as of {{ ledger_date }}</title>
+	</head>
+	<body>
+		<h1>Ledger as of {{ ledger_date }}</h1>
+		
+		<table>
+			<th>Name</th><th>Date</th><th>Income</th><th>Expense</th><th>Recurring?</th>
+			{% for item in ledger_items %}
+				<tr>
+					<td>{{ item.name }}</td><td>{{ item.date }}</td><td>{{ item.income }}</td><td>{{ item.expense }}</td><td>{{ item.recurring }}</td>
+				</tr>
+			{% endfor %}
+		</table>
+		
+		
+	</body>
+</html>

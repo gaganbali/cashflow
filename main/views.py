@@ -1,38 +1,25 @@
 # Create your views here.
 import pandas as pd
+import datetime
 from django.shortcuts import render
 from django.contrib import messages
 from django.views.generic.base import View
 import main.forms as forms
 import main.models as models
 
-class AddDisplayItemView(View):
-    form_class = None
-    form_name = None
-    model = None
-    template_name = None
-
-    def get(self, request, *args, **kwargs):
-        return render(request, self.template_name,
-                      {self.form_name: self.form_class(),
-                       'items': self.model.objects.all()})
+class LedgerList(View):
+    template_name = 'ledger.html'
     
-    def post(self, request, *args, **kwargs):
-        form = self.form_class(request.POST)
-        form.save()
-        return render(request, self.template_name,
-                      {self.form_name: self.form_class(),
-                       'items': self.model.objects.all()})
-        
-class RecurItemView(AddDisplayItemView):
-    form_class = forms.RecurringItemForm
-    form_name = 'recur_form'
-    model = models.RecurItem
-    template_name = 'recurring_adj_form.html'
-
-class CashView(AddDisplayItemView):
-    form_class = forms.CashLevelForm
-    form_name = 'cash_form'
-    model = models.CashLevel
-    template_name = 'view_cash.html'
+    def _prepare_ledger(self):
+        """prepare ledger by populating from RecurItem"""
+        for recur_item in models.RecurItem.objects.all():
+            recur_item.populate_ledger()
     
+    def get(self, request, date_string, offset):
+        """show ledger starting from given date"""
+        begin_date = datetime.datetime.strptime(date_string, '%Y%m%d')
+        self._prepare_ledger()
+        ledger_items = models.Ledger.objects.filter(date__gte=begin_date,
+                            date__lte=begin_date + datetime.timedelta(weeks=4*int(offset)))
+        return render(request, self.template_name,
+                      {'ledger_date': begin_date, 'ledger_items': ledger_items})
