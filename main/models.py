@@ -11,8 +11,9 @@ def _date_range(begin_date, end_date, freq_num, freq_interval):
     """list of dates between begin date and end date at given interval"""
     if freq_interval == 'M':
         day_offset = begin_date.day - 1
-        return (pd.date_range(begin_date, end_date, freq = 'MS')
+        date_range = (pd.date_range(begin_date, end_date, freq = 'MS')
                       .shift(day_offset, freq=pd.datetools.day))
+        return [date for date in date_range if date.date() <= end_date]
     if freq_interval == 'W':
         freq_interval += '-{}'.format(WEEKDAYS[begin_date.weekday()])
     return pd.date_range(begin_date, end_date,
@@ -30,6 +31,11 @@ class RecurItem(models.Model):
     
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        """overwrite save to include populating ledger"""
+        self.populate_ledger()
+        super().save(*args, **kwargs)
     
     def populate_ledger(self, override=False):
         """populate rows in ledger based on row of recur item
@@ -86,10 +92,23 @@ class Ledger(models.Model):
         """expense amount if type is expense"""
         if self.exp_inc == 'exp':
             return self.amount
+        else:
+            return ''
     
     @property
     def income(self):
         """income amount if type is income"""
         if self.exp_inc == 'inc':
             return self.amount
+        else:
+            return ''
+    
+    @property
+    def signed_amount(self):
+        """signed amount, used for calculating cash levels"""
+        if self.exp_inc == 'inc':
+            return self.amount
+        else:
+            return -1 * self.amount
+
     

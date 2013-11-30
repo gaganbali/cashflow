@@ -1,0 +1,21 @@
+<html>
+	<head>
+		<title>Cash Levels as of {{ begin_date.date }} w/ balance {{ begin_level }}</title>
+	</head>
+	<body>
+		<h1>Cash Levels as of {{ begin_date.date }} w/ balance {{ begin_level }}</h1>
+		
+		<table>
+			<th>Date</th><th>Min level</th><th>Cash level</th>
+			{% for ind, row in cash_df.iterrows %}
+				<tr>
+					<td>{{ row.date.date }}</td><td>{{ row.min_level }}</td><td>{{ row.final_level }}</td>
+				</tr>
+			{% endfor %}
+		</table>
+		
+			
+		
+		
+	</body>
+</html>

@@ -7,6 +7,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
                        url(r'^ledger/(?P<date_string>\d+)/(?P<offset>\d+)/$', views.LedgerList.as_view()),
+                       url(r'^cash/(?P<date_string>\d+)/(?P<begin_level>\d+)/$', views.CashLevelList.as_view()),
     # Examples:
     # url(r'^$', 'cashflow.views.home', name='home'),
     # url(r'^cashflow/', include('cashflow.foo.urls')),
