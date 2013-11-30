@@ -9,7 +9,7 @@
 			<th>Date</th><th>Min level</th><th>Cash level</th>
 			{% for ind, row in cash_df.iterrows %}
 				<tr>
-					<td>{{ row.date.date }}</td><td>{{ row.min_level }}</td><td>{{ row.final_level }}</td>
+					<td><a href="{% url 'ledger' row.date_string '0' %}">{{ row.date.date }}</a></td><td>{{ row.min_level }}</td><td>{{ row.final_level }}</td>
 				</tr>
 			{% endfor %}
 		</table>

@@ -5,19 +5,26 @@ from django.db.models import Sum
 from django.shortcuts import render
 from django.contrib import messages
 from django.views.generic.base import View
+from django.views.generic import ListView
 import main.forms as forms
 import main.models as models
 
-class LedgerList(View):
+class LedgerList(ListView):
+    """view that gives list of ledger items on a given day"""
+    model = models.Ledger
+    context_object_name = 'ledger_items'
     template_name = 'ledger.html'
     
-    def get(self, request, date_string, offset):
-        """show ledger starting from given date"""
-        begin_date = datetime.datetime.strptime(date_string, '%Y%m%d')
-        ledger_items = models.Ledger.objects.filter(date__gte=begin_date,
-                            date__lte=begin_date + datetime.timedelta(weeks=4*int(offset)))
-        return render(request, self.template_name,
-                      {'ledger_date': begin_date, 'ledger_items': ledger_items})
+    def get_queryset(self):
+        """return ledger items corresponding to date in url"""
+        self.ledger_date = datetime.datetime.strptime(self.kwargs['date_string'], '%Y%m%d')
+        end_date = self.ledger_date + datetime.timedelta(weeks = 4 * int(self.kwargs['offset']))
+        return self.model.objects.filter(date__gte=self.ledger_date, date__lte=end_date)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['ledger_date'] = self.ledger_date
+        return context
 
 class CashLevelList(View):
     template_name = 'cash_levels.html'
@@ -47,6 +54,7 @@ class CashLevelList(View):
             final_levels.append(final_levels[-1] - expenses + income)       
         cash_df = pd.DataFrame({'min_level': min_levels, 'final_level': final_levels,
                                 'date': dates})
+        cash_df['date_string'] = cash_df['date'].map(lambda dt: dt.strftime('%Y%m%d'))
         return render(request, self.template_name,
                       {'begin_date': begin_date, 'begin_level': begin_level,
                        'cash_df': cash_df.sort('date')})
